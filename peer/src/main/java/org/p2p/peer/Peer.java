@@ -14,7 +14,7 @@ import java.util.Scanner;
  */
 public class Peer {
 	int cookie;
-	
+
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
 
 		/*
@@ -42,9 +42,24 @@ public class Peer {
 					"1.Register\n" + "2.Leave\n" + "3.PQuery \n" + "4.Keep Alive\n" + "5.RFCQuery \n" + "6.GetRFC \n");
 			int choice = sc.nextInt();
 			switch (choice) {
-			case 1:p.register();
+			case 1:
+				p.register();
 				break;
-			case 2:p.leave();
+			case 2:
+				p.leave();
+				break;
+			case 3:
+				p.leave();
+				break;
+			case 4:
+				p.leave();
+				break;
+			case 5:
+				p.rfcQuery();
+				break;
+			case 6:
+				p.getRFC();
+				break;
 			default:
 				break;
 			}
@@ -68,17 +83,25 @@ public class Peer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	void leave() {
 		try {
 
 			Socket client = new Socket(InetAddress.getLocalHost(), 65423);
 			ObjectOutputStream toRS = new ObjectOutputStream(client.getOutputStream());
-			toRS.writeObject("Leave"+cookie);
+			toRS.writeObject("Leave" + cookie);
 			toRS.close();
 			client.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	void rfcQuery() {
+
+	}
+
+	void getRFC() {
+
 	}
 }
