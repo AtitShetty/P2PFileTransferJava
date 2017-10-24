@@ -12,15 +12,6 @@ The peer project has the code for peer servers.
 
 First build both the projects using "mvn package"
 
-Then go to central/target and run 
-
-``` java -jar central-0.0.1-jar-with-dependencies.jar ```
-
-The go to peer/targer and run
-
-``` java -jar peer-0.0.1-jar-with-dependencies.jar ```
-
-
-Run both of them in different consoles.
+Then first run runCentral.bat and then runPeer.bat in two different consoles.
 
 You should see an acknowledgement in peer console.
