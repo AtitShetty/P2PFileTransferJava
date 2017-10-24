@@ -14,11 +14,11 @@ First build both the projects using "mvn package"
 
 Then go to central/target and run 
 
-''' java -jar central-0.0.1-jar-with-dependencies.jar '''
+``` java -jar central-0.0.1-jar-with-dependencies.jar ```
 
 The go to peer/targer and run
 
-''' java -jar peer-0.0.1-jar-with-dependencies.jar '''
+``` java -jar peer-0.0.1-jar-with-dependencies.jar ```
 
 
 Run both of them in different consoles.
