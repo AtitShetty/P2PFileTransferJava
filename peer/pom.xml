@@ -45,7 +45,7 @@
 							<archive>
 								<manifest>
 									<mainClass>
-										org.p2p.peer.App
+										org.p2p.peer.Peer
 									</mainClass>
 									<addClasspath>true</addClasspath>
 								</manifest>
