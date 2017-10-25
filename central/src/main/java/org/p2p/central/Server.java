@@ -87,10 +87,10 @@ public class Server {
 				ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
 				ObjectOutputStream os = new ObjectOutputStream(clientSocket.getOutputStream());
+				String requestmessage = is.readObject().toString();
+				String[] request = requestmessage.split("\n");
 
-				String[] request = is.readObject().toString().split("\n");
-
-				System.out.println("Input from peer" + Arrays.toString(request));
+				System.out.println("Request Message:\n\n" + requestmessage+"\n");
 
 				if (request[0].startsWith("REGISTER")) {
 					os.writeObject(fulfillRegisterRequest(request));
@@ -116,7 +116,7 @@ public class Server {
 		}
 
 		public String fulfillRegisterRequest(String[] request) {
-			System.out.println("Register request");
+			//System.out.println("Register request");
 			try {
 
 				int portNumber = Integer.parseInt(request[2].split(" ")[1]);
@@ -126,20 +126,20 @@ public class Server {
 				for (Entry<Integer, Peer> p : this.server.peers.entrySet()) {
 					if (p.getValue().hostname.equals(hostName) && p.getValue().portNumber == portNumber) {
 
-						System.out.println("Before" + p.getValue().toString());
+						//System.out.println("Before" + p.getValue().toString());
 						p.getValue().isActive = true;
 						p.getValue().ttl = TTL_VAL;
 						p.getValue().registrationCount += 1;
 						p.getValue().lastregisteredDate = new Date();
-						System.out.println("After" + this.server.peers.get(p.getKey()).toString());
-						return "REGISTERED\ncookie " + p.getKey();
+						//System.out.println("After" + this.server.peers.get(p.getKey()).toString());
+						return "REGISTERED\nCookie: " + p.getKey();
 					}
 				}
 
 				int cookie = this.server.getCookieIndex();
 
 				this.server.peers.put(cookie, new Peer(hostName, cookie, portNumber));
-				return "REGISTERED\ncookie " + cookie;
+				return "REGISTERED\nCookie: " + cookie;
 
 			} catch (Exception e) {
 				return "BAD_REQUEST";
@@ -147,7 +147,7 @@ public class Server {
 		}
 
 		public String fulfillLeaveRequest(String[] request) {
-			System.out.println("Leave Request");
+			//System.out.println("Leave Request");
 			try {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 
@@ -155,9 +155,9 @@ public class Server {
 					return "BAD_REQUEST\nNot Registered";
 				}
 
-				System.out.println("Before:" + this.server.peers.get(cookie).isActive);
+				//System.out.println("Before: " + this.server.peers.get(cookie).isActive);
 				this.server.peers.get(cookie).isActive = false;
-				System.out.println("After:" + this.server.peers.get(cookie).isActive);
+				//System.out.println("After: " + this.server.peers.get(cookie).isActive);
 				return "OK";
 			} catch (Exception e) {
 				return "BAD_REQUEST";
@@ -166,7 +166,7 @@ public class Server {
 		}
 
 		public String fulfillKeepAliveRequest(String[] request) {
-			System.out.println("Keep Alive Request");
+			//System.out.println("Keep Alive Request");
 			try {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 
@@ -175,11 +175,11 @@ public class Server {
 				}
 
 				if (checkIfPeerAlive(cookie)) {
-					System.out.println("Before:" + this.server.peers.get(cookie).ttl);
+					//System.out.println("Before:" + this.server.peers.get(cookie).ttl);
 
 					this.server.peers.get(cookie).ttl = TTL_VAL;
 
-					System.out.println("After:" + this.server.peers.get(cookie).ttl);
+					//System.out.println("After:" + this.server.peers.get(cookie).ttl);
 					return "OK";
 				} else {
 					return "BAD_REQUEST\nREGISTER AGAIN";
@@ -192,7 +192,7 @@ public class Server {
 		}
 
 		public String fulfillKeepPQueryRequest(String[] request) {
-			System.out.println("PQuery Request");
+			//System.out.println("PQuery Request");
 			try {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 

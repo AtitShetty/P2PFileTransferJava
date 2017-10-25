@@ -24,7 +24,7 @@ public class RFCServer extends Thread {
 	}
 
 	public void run() {
-		System.out.println("Started RFCServer");
+		//System.out.println("Started RFCServer");
 
 		try {
 			while (!stopServer) {

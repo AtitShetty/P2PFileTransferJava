@@ -57,9 +57,7 @@ public class Peer {
 
 		Scanner sc = new Scanner(System.in);
 
-		System.out.println(myPort);
-
-		System.out.println("Please enter a port number for your rfc server");
+		System.out.println("Please enter a port number for your RFC server");
 
 		while (myPort == null) {
 			try {
@@ -83,8 +81,8 @@ public class Peer {
 
 			if (Paths.get(temp) != null && (new File(Paths.get(temp).toString())).isDirectory()) {
 				rfcFolderPath = temp;
-				System.out.println(rfcFolderPath);
-				System.out.println((new File(Paths.get(temp).toString())).list().length);
+				//System.out.println(rfcFolderPath);
+				System.out.println((new File(Paths.get(temp).toString())).list().length +" files found");
 			} else {
 				System.out.println("Error with given path");
 			}
@@ -147,6 +145,7 @@ public class Peer {
 				rfcServer.stopServer = true;
 				timer.cancel();
 				destroyRFCServer();
+				
 				break;
 			default:
 				break;
@@ -162,13 +161,13 @@ public class Peer {
 	public static void register() {
 		try {
 
-			System.out.println("about to register with host" + LOCALHOST);
+			//System.out.println("about to register with host" + LOCALHOST);
 			Socket client = new Socket(LOCALHOST, rsServerPort);
 			ObjectOutputStream toRS = new ObjectOutputStream(client.getOutputStream());
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 			toRS.writeObject("REGISTER\nHOST " + LOCALHOST + "\nPORT " + myPort);
 			String res = fromRS.readObject().toString();
-			System.out.println("Response is:\n" + res);
+			System.out.println("Response Message:\n\n" + res +"\n");
 
 			if (res.startsWith("REGISTERED")) {
 				Peer.cookie = Integer.parseInt(res.split("\n")[1].split(" ")[1]);
@@ -191,9 +190,9 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("LEAVE\ncookie " + cookie);
+			toRS.writeObject("LEAVE\nCookie: " + cookie);
 
-			System.out.println(fromRS.readObject().toString());
+			System.out.println("Response Message:\n\n"+fromRS.readObject().toString()+"\n");
 
 			toRS.close();
 			fromRS.close();
@@ -213,7 +212,7 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("GET PEER_LIST\ncookie: " + cookie);
+			toRS.writeObject("GET PEER_LIST\nCookie: " + cookie);
 
 			String response = fromRS.readObject().toString();
 
@@ -229,13 +228,13 @@ public class Peer {
 				}
 			}
 
-			System.out.println(response);
+			System.out.println("Response Message:\n\n"+response+"\n");
 
 			toRS.close();
 			fromRS.close();
 			client.close();
 		} catch (Exception e) {
-			System.out.println("Could not deregister:\n" + e);
+			System.out.println("Could not unregister:\n" + e);
 		}
 
 	}
@@ -250,9 +249,9 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("KEEP_ALIVE\ncookie " + cookie);
+			toRS.writeObject("KEEP_ALIVE\nCookie: " + cookie);
 
-			System.out.println(fromRS.readObject().toString());
+			System.out.println("Response Message:\n\n"+fromRS.readObject().toString()+"\n");
 
 			toRS.close();
 			fromRS.close();
@@ -299,7 +298,7 @@ public class Peer {
 					}
 				}
 
-				System.out.println(response);
+				System.out.println("Response Message:\n\n"+response+"\n");
 
 				toRS.close();
 				fromRS.close();
@@ -351,7 +350,7 @@ public class Peer {
 						}
 					}
 
-					System.out.println(response);
+					System.out.println("Response Message:\n\n"+response+"\n");
 
 					toRS.close();
 					fromRS.close();
@@ -371,14 +370,14 @@ public class Peer {
 	private static void updateMyRFCList() throws NumberFormatException, UnknownHostException {
 		File folder = new File(Paths.get(rfcFolderPath).toString());
 
-		System.out.println(folder.isDirectory());
+		//System.out.println(folder.isDirectory());
 
 		File[] listOfFiles = folder.listFiles();
 
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
-				System.out.println(listOfFiles[i].getName());
-				System.out.println(listOfFiles[i].getName().split(".txt")[0]);
+				//System.out.println(listOfFiles[i].getName());
+				//System.out.println(listOfFiles[i].getName().split(".txt")[0]);
 				rfcList.add(new RFCNode(Integer.parseInt(listOfFiles[i].getName().split(".txt")[0].trim()),
 						InetAddress.getLocalHost().getHostAddress(), myPort));
 				existingFiles.add(listOfFiles[i].getName().split(".txt")[0]);
@@ -467,8 +466,9 @@ public class Peer {
 			toRS.writeObject("Destroy");
 			client.close();
 		} catch (Exception e) {
-			System.out.println("Error destroying server" + e);
+			//System.out.println("Error destroying server" + e);
 		}
+		System.exit(0);
 	}
 
 	public static void scheduleTask() {
