@@ -116,12 +116,10 @@ public class Peer {
 				break;
 			case 5:
 				getRFCIndex();
-
-				System.out.println(Arrays.toString(rfcList.toArray()));
+				//System.out.println(Arrays.toString(rfcList.toArray()));
 				break;
 			case 6:
 				getRFC();
-
 				break;
 			case 7:
 				System.out.println("Please enter a valid hostname. Default is localhost");
@@ -283,6 +281,8 @@ public class Peer {
 				toRS.writeObject("GET RFC-Index");
 
 				String response = fromRS.readObject().toString();
+				
+				System.out.println("Response Message:\n\n"+response+"\n");
 
 				if (response.startsWith("OK")) {
 					String[] respArr = response.split("\n");
@@ -297,8 +297,6 @@ public class Peer {
 						}
 					}
 				}
-
-				System.out.println("Response Message:\n\n"+response+"\n");
 
 				toRS.close();
 				fromRS.close();

@@ -50,25 +50,24 @@ public class RFCServer extends Thread {
 		public void run() {
 			try {
 
-				System.out.println("fulfill");
+				//System.out.println("fulfill");
 				ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
 				ObjectOutputStream os = new ObjectOutputStream(clientSocket.getOutputStream());
 
 				String[] request = is.readObject().toString().split("\n");
 
-				System.out.println("Input from peer" + request);
+				System.out.println("Request Message:\n\n" + request+"\n");
 
 				if (request[0].startsWith("GET RFC-Index")) {
 					os.writeObject(fulfillRFCIndexRequest(request));
 				} else if (request[0].startsWith("GET RFC")) {
 					os.writeObject(fulfillRFCRequest(request));
-
 				} else {
 					os.writeObject("BAD_REQUEST\nCannot Fulfill Request");
 				}
 			} catch (Exception e) {
-				System.out.println("Exception occured" + e);
+				System.out.println("Exception occured " + e);
 
 			} finally {
 				try {
@@ -81,7 +80,7 @@ public class RFCServer extends Thread {
 
 		public String fulfillRFCIndexRequest(String[] request) {
 
-			System.out.println("fulfill RFCIndexRequest");
+			//System.out.println("fulfill RFCIndexRequest");
 			try {
 				StringBuilder response = new StringBuilder("OK");
 
@@ -100,7 +99,7 @@ public class RFCServer extends Thread {
 
 		public String fulfillRFCRequest(String[] request) {
 
-			System.out.println("fulfill RFCIndexRequest");
+			//System.out.println("fulfill RFCIndexRequest");
 			try {
 
 				int rfcIndex = Integer.parseInt(request[1]);
