@@ -25,10 +25,6 @@ public class Server {
 
 	public Server() throws NumberFormatException, IOException {
 
-		// Properties props = new Properties();
-
-		// props.load(new FileInputStream(new
-		// File("src/resources/server.properties")));
 		serverSocket = new ServerSocket(65423);
 
 		peers = new ConcurrentHashMap<Integer, Peer>();
@@ -255,17 +251,18 @@ public class Server {
 		@Override
 		public void run() {
 
-			System.out.println("Inside Timer");
+			// System.out.println("Inside Timer");
 
 			for (Entry<Integer, Peer> p : this.peers.entrySet()) {
 				Peer peer = p.getValue();
-				System.out.println("Before" + p.getValue().toString());
+				// System.out.println("Before" + p.getValue().toString());
 				peer.ttl = peer.ttl >= 60 ? peer.ttl - 60 : 0;
 				if (peer.ttl <= 0) {
 					peer.isActive = false;
 				}
 
-				System.out.println("After" + this.peers.get(p.getKey()).toString());
+				// System.out.println("After" +
+				// this.peers.get(p.getKey()).toString());
 
 			}
 		}

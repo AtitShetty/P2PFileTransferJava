@@ -28,8 +28,10 @@ public class RFCServer extends Thread {
 
 		try {
 			while (!stopServer) {
-				new RequestHandler(this.serverSocket.accept());
+				new RequestHandler(this.serverSocket.accept()).run();
+				;
 			}
+			this.serverSocket.close();
 		} catch (Exception e) {
 			System.out.println("RFC server is closed due to:\n" + e);
 		}
