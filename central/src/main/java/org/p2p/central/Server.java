@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +94,7 @@ public class Server {
 
 				String[] request = is.readObject().toString().split("\n");
 
-				System.out.println("Input from peer" + request);
+				System.out.println("Input from peer" + Arrays.toString(request));
 
 				if (request[0].startsWith("REGISTER")) {
 					os.writeObject(fulfillRegisterRequest(request));
