@@ -12,7 +12,7 @@ pwd
 
 echo -e "\n\n\nCreating Test Directory"
 rm -rf Testing
-mkdir -p Testing/central/RFC
+mkdir -p Testing/central
 
 for number in {1..6}
 do
