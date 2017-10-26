@@ -50,24 +50,27 @@ public class RFCServer extends Thread {
 		public void run() {
 			try {
 
-				//System.out.println("fulfill");
+				// System.out.println("fulfill");
 				ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
 				ObjectOutputStream os = new ObjectOutputStream(clientSocket.getOutputStream());
 
-				String[] request = is.readObject().toString().split("\n");
+				String request = is.readObject().toString();
 
-				System.out.println("Request Message:\n\n" + request+"\n");
+				String[] requestArr = request.split("\n");
 
-				if (request[0].startsWith("GET RFC-Index")) {
-					os.writeObject(fulfillRFCIndexRequest(request));
-				} else if (request[0].startsWith("GET RFC")) {
-					os.writeObject(fulfillRFCRequest(request));
+				System.out.println("Request:\n" + request);
+
+				if (requestArr[0].startsWith("GET RFC-Index")) {
+					os.writeObject(fulfillRFCIndexRequest(requestArr));
+				} else if (requestArr[0].startsWith("GET RFC")) {
+					os.writeObject(fulfillRFCRequest(requestArr));
+
 				} else {
 					os.writeObject("BAD_REQUEST\nCannot Fulfill Request");
 				}
 			} catch (Exception e) {
-				System.out.println("Exception occured " + e);
+				System.out.println("Exception occured" + e);
 
 			} finally {
 				try {
@@ -80,7 +83,7 @@ public class RFCServer extends Thread {
 
 		public String fulfillRFCIndexRequest(String[] request) {
 
-			//System.out.println("fulfill RFCIndexRequest");
+			// System.out.println("fulfill RFCIndexRequest");
 			try {
 				StringBuilder response = new StringBuilder("OK");
 
@@ -99,7 +102,7 @@ public class RFCServer extends Thread {
 
 		public String fulfillRFCRequest(String[] request) {
 
-			//System.out.println("fulfill RFCIndexRequest");
+			// System.out.println("fulfill RFCIndexRequest");
 			try {
 
 				int rfcIndex = Integer.parseInt(request[1]);
@@ -107,7 +110,11 @@ public class RFCServer extends Thread {
 				File rfcFile = new File(Paths.get(Peer.rfcFolderPath + "/" + rfcIndex + ".txt").toString());
 
 				if (rfcFile.exists()) {
-					return IOUtils.toString(new FileInputStream(rfcFile), "UTF-8");
+					FileInputStream fis = new FileInputStream(rfcFile);
+					String response = IOUtils.toString(fis, "UTF-8");
+					fis.close();
+					return response;
+
 				} else {
 					return "404/nFile not found";
 				}

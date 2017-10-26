@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -101,11 +100,11 @@ public class Server {
 				} else if (request[0].startsWith("GET")) {
 					os.writeObject(fulfillKeepPQueryRequest(request));
 				} else {
-					os.writeObject("BAD_REQUEST\nCannot Fulfill Request");
+					os.writeObject("BAD_REQUEST\nCANNOT FULFILL REQUEST");
 				}
 
 			} catch (Exception e) {
-				System.out.println("cannot fulfil request" + e.getMessage());
+				System.out.println("Cannot fulfil request" + e.getMessage());
 			} finally {
 				try {
 					this.clientSocket.close();
@@ -132,14 +131,14 @@ public class Server {
 						p.getValue().registrationCount += 1;
 						p.getValue().lastregisteredDate = new Date();
 						//System.out.println("After" + this.server.peers.get(p.getKey()).toString());
-						return "REGISTERED\nCookie: " + p.getKey();
+						return "REGISTERED\nCOOKIE: " + p.getKey();
 					}
 				}
 
 				int cookie = this.server.getCookieIndex();
 
 				this.server.peers.put(cookie, new Peer(hostName, cookie, portNumber));
-				return "REGISTERED\nCookie: " + cookie;
+				return "REGISTERED\nCOOKIE: " + cookie;
 
 			} catch (Exception e) {
 				return "BAD_REQUEST";
@@ -152,7 +151,7 @@ public class Server {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 
 				if (!this.server.peers.containsKey(cookie)) {
-					return "BAD_REQUEST\nNot Registered";
+					return "BAD_REQUEST\nNOT REGISTERED";
 				}
 
 				//System.out.println("Before: " + this.server.peers.get(cookie).isActive);
@@ -171,7 +170,7 @@ public class Server {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 
 				if (!this.server.peers.containsKey(cookie)) {
-					return "BAD_REQUEST\nNot Registered";
+					return "BAD_REQUEST\nNOT REGISTERED";
 				}
 
 				if (checkIfPeerAlive(cookie)) {
@@ -197,7 +196,7 @@ public class Server {
 				int cookie = Integer.parseInt(request[1].split(" ")[1]);
 
 				if (!this.server.peers.containsKey(cookie)) {
-					return "BAD_REQUEST\nNot Registered";
+					return "BAD_REQUEST\nNOT REGISTERED";
 				}
 
 				if (checkIfPeerAlive(cookie)) {

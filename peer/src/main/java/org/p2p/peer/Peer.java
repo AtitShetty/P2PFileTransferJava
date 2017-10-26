@@ -9,11 +9,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.time.Duration;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -98,8 +102,9 @@ public class Peer {
 
 			boolean exit = false;
 
-			System.out.println("1.Register\n" + "2.Leave\n" + "3.PQuery \n" + "4.Keep Alive\n" + "5.RFCQuery \n"
-					+ "6.GetRFC \n" + "7.Set RS server hostname\n" + "8.Set RS server port\n" + "9.Exit\n");
+			System.out.println("1.Register\n" + "2.Leave\n" + "3.Query For Peers \n" + "4.Keep Alive\n"
+					+ "5.Query For RFCIndex\n" + "6.Get All RFCs \n" + "7.Get specific RFC\n"
+					+ "8.Set RS server hostname\n" + "9.Set RS server port\n" + "10.Exit\n");
 			int choice = sc.nextInt();
 			switch (choice) {
 			case 1:
@@ -116,17 +121,20 @@ public class Peer {
 				break;
 			case 5:
 				getRFCIndex();
-				//System.out.println(Arrays.toString(rfcList.toArray()));
 				break;
 			case 6:
 				getRFC();
 				break;
 			case 7:
+				System.out.println("Please enter a RFC index");
+				getSpecificRFC(sc.nextInt());
+				break;
+			case 8:
 				System.out.println("Please enter a valid hostname. Default is localhost");
 				rsServerHostname = sc.next();
 				System.out.println("New hostname is: " + rsServerHostname);
 				break;
-			case 8:
+			case 9:
 				System.out.println("Please enter a valid port. Default is 65423");
 				try {
 					rsServerPort = sc.nextInt();
@@ -138,7 +146,7 @@ public class Peer {
 				}
 
 				break;
-			case 9:
+			case 10:
 				exit = true;
 				rfcServer.stopServer = true;
 				timer.cancel();
@@ -188,7 +196,7 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("LEAVE\nCookie: " + cookie);
+			toRS.writeObject("LEAVE\nCOOKIE: " + cookie);
 
 			System.out.println("Response Message:\n\n"+fromRS.readObject().toString()+"\n");
 
@@ -210,7 +218,7 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("GET PEER_LIST\nCookie: " + cookie);
+			toRS.writeObject("GET PEER_LIST\nCOOKIE: " + cookie);
 
 			String response = fromRS.readObject().toString();
 
@@ -247,7 +255,7 @@ public class Peer {
 
 			ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
 
-			toRS.writeObject("KEEP_ALIVE\nCookie: " + cookie);
+			toRS.writeObject("KEEP_ALIVE\nCOOKIE: " + cookie);
 
 			System.out.println("Response Message:\n\n"+fromRS.readObject().toString()+"\n");
 
@@ -261,6 +269,7 @@ public class Peer {
 	}
 
 	public static void getRFCIndex() {
+
 		Iterator<PeerInfo> it = peerInfoList.iterator();
 
 		while (it.hasNext()) {
@@ -281,8 +290,6 @@ public class Peer {
 				toRS.writeObject("GET RFC-Index");
 
 				String response = fromRS.readObject().toString();
-				
-				System.out.println("Response Message:\n\n"+response+"\n");
 
 				if (response.startsWith("OK")) {
 					String[] respArr = response.split("\n");
@@ -298,6 +305,8 @@ public class Peer {
 					}
 				}
 
+				System.out.println("Response Message:\n\n" + response + "\n");
+
 				toRS.close();
 				fromRS.close();
 				client.close();
@@ -308,10 +317,79 @@ public class Peer {
 		}
 	}
 
-	public static void getRFC() {
+	public static void getSpecificRFC(int rfcNo) throws NumberFormatException, UnknownHostException {
+
+		if (existingFiles.contains(rfcNo + "")) {
+			System.out.println("File Already Exists in " + rfcFolderPath);
+		} else {
+			getRFCIndex();
+			List<RFCNode> modifiedList = new LinkedList<Peer.RFCNode>();
+
+			for (RFCNode rfc : rfcList) {
+
+				if (rfc.rfcNumber == rfcNo) {
+					System.out
+							.println("Getting RFC" + rfc.rfcNumber + " from peer at " + rfc.hostname + ":" + rfc.port);
+
+					try {
+						Socket client = new Socket(rfc.hostname, rfc.port);
+
+						ObjectOutputStream toRS = new ObjectOutputStream(client.getOutputStream());
+
+						ObjectInputStream fromRS = new ObjectInputStream(client.getInputStream());
+
+						toRS.writeObject("GET RFC\n" + rfc.rfcNumber);
+
+						String response = fromRS.readObject().toString();
+
+						if (!response.startsWith("BAD_REQUEST")) {
+
+							try {
+
+								FileOutputStream fos = new FileOutputStream(
+										new File(Paths.get(rfcFolderPath + "/" + rfc.rfcNumber + ".txt").toString()));
+								IOUtils.write(response, fos, "UTF-8");
+								fos.close();
+
+								existingFiles.add("" + rfc.rfcNumber);
+
+								modifiedList.add(new RFCNode(rfc.rfcNumber, InetAddress.getLocalHost().getHostAddress(),
+										myPort));
+
+								System.out.println("OK\n" + rfc.rfcNumber + ".txt");
+							} catch (Exception e) {
+								System.out.println("Couldn't save file " + rfc.rfcNumber + ".txt:\n" + e);
+							}
+						} else {
+							System.out.println("Response Message:\n\n" + response + "\n");
+						}
+
+						toRS.close();
+						fromRS.close();
+						client.close();
+
+					} catch (Exception e) {
+						System.out.println("Error getting RFC" + rfc.rfcNumber + "  from peer at " + rfc.hostname + ":"
+								+ rfc.port + "\n" + e);
+					}
+				}
+			}
+			rfcList.addAll(modifiedList);
+
+			updateMyRFCList();
+		}
+
+	}
+
+	public static void getRFC() throws NumberFormatException, UnknownHostException {
+		System.out.println("Existing files size" + existingFiles.size());
 		List<RFCNode> modifiedList = new LinkedList<Peer.RFCNode>();
 
+		Map<String, Duration> logger = new HashMap<String, Duration>();
+
 		Iterator<RFCNode> it = rfcList.iterator();
+
+		Date masterStart = new Date();
 
 		while (it.hasNext()) {
 
@@ -320,6 +398,9 @@ public class Peer {
 			if (!existingFiles.contains(rfc.rfcNumber + "")) {
 
 				try {
+
+					Date start = new Date();
+
 					System.out
 							.println("Getting RFC" + rfc.rfcNumber + " from peer at " + rfc.hostname + ":" + rfc.port);
 
@@ -336,19 +417,29 @@ public class Peer {
 					if (!response.startsWith("BAD_REQUEST")) {
 
 						try {
-							IOUtils.write(response,
-									new FileOutputStream(new File(
-											Paths.get(rfcFolderPath + "/" + rfc.rfcNumber + ".txt").toString())),
+
+							FileOutputStream fos = new FileOutputStream(
+									new File(Paths.get(rfcFolderPath + "/" + rfc.rfcNumber + ".txt").toString()));
+							IOUtils.write(response, fos,
 									"UTF-8");
+							fos.close();
+
 							existingFiles.add("" + rfc.rfcNumber);
 
-							modifiedList.add(new RFCNode(rfc.rfcNumber, InetAddress.getLocalHost().toString(), myPort));
+							logger.put("" + rfc.rfcNumber + ",\t" + response.length(),
+									Duration.between(start.toInstant(), new Date().toInstant()));
+							modifiedList.add(
+									new RFCNode(rfc.rfcNumber, InetAddress.getLocalHost().getHostAddress(), myPort));
+
+							System.out.println("OK\n" + rfc.rfcNumber + ".txt");
 						} catch (Exception e) {
 							System.out.println("Couldn't save file " + rfc.rfcNumber + ".txt:\n" + e);
 						}
+					} else {
+						System.out.println("Response Message:\n\n" + response + "\n");
 					}
 
-					System.out.println("Response Message:\n\n"+response+"\n");
+
 
 					toRS.close();
 					fromRS.close();
@@ -361,11 +452,31 @@ public class Peer {
 
 		}
 
+		Date masterEnd = new Date();
+
+		logger.put("master", Duration.between(masterStart.toInstant(), masterEnd.toInstant()));
+
 		rfcList.addAll(modifiedList);
+
+		updateMyRFCList();
+
+		displayLogs(logger);
 
 	}
 
+	public static void displayLogs(Map<String, Duration> logger) {
+		System.out.println("\n\nRFC_No,\tSize,\tDownload_Time\n\n");
+
+		for (Entry<String, Duration> ele : logger.entrySet()) {
+			if (!ele.getKey().equals("master"))
+				System.out.println(ele.getKey() + ",\t" + ele.getValue().toMillis());
+		}
+
+		System.out.println("Cumulative,\t,\t" + logger.get("master").toMillis());
+	}
+
 	private static void updateMyRFCList() throws NumberFormatException, UnknownHostException {
+		existingFiles.clear();
 		File folder = new File(Paths.get(rfcFolderPath).toString());
 
 		//System.out.println(folder.isDirectory());
@@ -376,9 +487,15 @@ public class Peer {
 			if (listOfFiles[i].isFile()) {
 				//System.out.println(listOfFiles[i].getName());
 				//System.out.println(listOfFiles[i].getName().split(".txt")[0]);
-				rfcList.add(new RFCNode(Integer.parseInt(listOfFiles[i].getName().split(".txt")[0].trim()),
-						InetAddress.getLocalHost().getHostAddress(), myPort));
+
+				RFCNode temp = new RFCNode(Integer.parseInt(listOfFiles[i].getName().split(".txt")[0].trim()),
+						InetAddress.getLocalHost().getHostAddress(), myPort);
+
+				if (!rfcList.contains(temp)) {
+					rfcList.add(temp);
+				}
 				existingFiles.add(listOfFiles[i].getName().split(".txt")[0]);
+
 
 			}
 		}
@@ -489,6 +606,8 @@ public class Peer {
 
 			// System.out.println("Inside Timer");
 
+			List<RFCNode> remove = new LinkedList<Peer.RFCNode>();
+
 			for (RFCNode p : rfcList) {
 
 				if (p.hostname.equals(LOCALHOST) && p.port == myPort) {
@@ -498,9 +617,15 @@ public class Peer {
 
 				p.ttl = p.ttl >= 60 ? p.ttl - 60 : 0;
 
+				if (p.ttl <= 0) {
+					remove.add(p);
+				}
+
 				// System.out.println("After" + p.toString());
 
 			}
+
+			rfcList.removeAll(remove);
 		}
 	}
 
