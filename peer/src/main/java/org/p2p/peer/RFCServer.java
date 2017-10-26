@@ -59,7 +59,7 @@ public class RFCServer extends Thread {
 
 				String[] requestArr = request.split("\n");
 
-				System.out.println("Request:\n\n" + request);
+				System.out.println("Request message:\n\n" + request);
 
 				if (requestArr[0].startsWith("GET RFC-Index")) {
 					os.writeObject(fulfillRFCIndexRequest(requestArr));
