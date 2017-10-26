@@ -431,7 +431,7 @@ public class Peer {
 							modifiedList.add(
 									new RFCNode(rfc.rfcNumber, InetAddress.getLocalHost().getHostAddress(), myPort));
 
-							System.out.println("OK\n" + rfc.rfcNumber + ".txt");
+							System.out.println("Response Message:\n\nOK\n" + rfc.rfcNumber + ".txt");
 						} catch (Exception e) {
 							System.out.println("Couldn't save file " + rfc.rfcNumber + ".txt:\n" + e);
 						}
